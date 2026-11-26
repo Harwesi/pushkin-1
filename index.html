@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<title>Пушкинский кок-жалдар🔥</title>
+<style>
+:root{
+  --bg:#0b0820;
+  --neon1:#ff2fb3;
+  --neon2:#22d3ee;
+  --neon3:#a3ff4f;
+  --card-r:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+body{
+  min-height:100vh;min-height:100dvh;overflow-x:hidden;
+  background:
+    radial-gradient(900px 600px at 10% -10%,rgba(255,47,179,.28),transparent 60%),
+    radial-gradient(900px 700px at 100% 0,rgba(34,211,238,.22),transparent 60%),
+    var(--bg);
+  background-attachment:fixed;
+}
+button,input{font:inherit;color:inherit}
+.screen{display:none}
+.screen.active{display:flex}
+
+/* ---------- Кнопки ---------- */
+.btn{
+  border:0;cursor:pointer;min-height:50px;padding:14px 26px;border-radius:16px;
+  font-weight:800;font-size:17px;letter-spacing:.2px;color:#fff;
+  background:linear-gradient(135deg,var(--neon1),#7c3aed 60%,var(--neon2));
+  box-shadow:0 8px 24px rgba(255,47,179,.35),inset 0 1px 0 rgba(255,255,255,.35);
+  touch-action:manipulation;transition:transform .15s,filter .15s;
+}
+.btn:active{transform:scale(.97);filter:brightness(1.1)}
+.btn.ghost{background:rgba(255,255,255,.08);box-shadow:none;border:1px solid rgba(255,255,255,.2)}
+
+/* ---------- Стартовый экран ---------- */
+#start{
+  flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  max-width:520px;margin:0 auto;padding:24px 18px;min-height:100vh;min-height:100dvh;gap:14px;
+}
+#start h1{
+  margin:0;font-size:clamp(30px,9vw,46px);line-height:1.05;
+  background:linear-gradient(90deg,var(--neon1),#ffd166,var(--neon2));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 18px rgba(255,47,179,.35));
+}
+#start .dedication{margin:0;font-size:clamp(16px,4.6vw,19px);line-height:1.4;opacity:.95}
+.group-title{align-self:stretch;text-align:left;font-size:13px;text-transform:uppercase;letter-spacing:1.2px;opacity:.65;margin:6px 0 -4px}
+.pcount{align-self:stretch;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.opt{
+  cursor:pointer;padding:12px 4px;border-radius:14px;text-align:center;
+  border:2px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);touch-action:manipulation;
+  transition:border-color .2s,box-shadow .2s,background .2s;
+}
+.opt b{display:block;font-size:22px}
+.opt small{display:block;opacity:.7;font-size:12px}
+.opt.sel{border-color:var(--neon2);background:rgba(34,211,238,.10);box-shadow:0 0 18px rgba(34,211,238,.35)}
+.names{align-self:stretch;display:flex;flex-direction:column;gap:8px}
+.names input{
+  width:100%;padding:12px 14px;border-radius:12px;font-size:16px;
+  border:2px solid var(--pc,rgba(255,255,255,.2));background:rgba(255,255,255,.06);outline:none;
+}
+.names input:focus{box-shadow:0 0 14px var(--pc)}
+.hint{align-self:stretch;margin:0;text-align:left;font-size:13px;opacity:.7;line-height:1.35}
+#startBtn{align-self:stretch;margin-top:8px;font-size:19px}
+
+/* ---------- Игровой экран ---------- */
+#game{flex-direction:column;min-height:100vh;min-height:100dvh}
+.hud{
+  position:sticky;top:0;z-index:10;
+  padding:calc(8px + env(safe-area-inset-top)) 10px 8px;
+  background:rgba(11,8,32,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+.hudrow{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.hud .stats{display:flex;gap:10px;flex-wrap:wrap;font-weight:700;font-size:14px;font-variant-numeric:tabular-nums}
+.hud .stats span{white-space:nowrap}
+.hud .btns{display:flex;gap:6px}
+.iconbtn{
+  width:42px;height:42px;border-radius:12px;border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.08);cursor:pointer;font-size:18px;touch-action:manipulation;
+}
+.players{display:flex;gap:6px;margin-top:8px}
+.players:empty{display:none}
+.chip{
+  flex:1;min-width:0;display:flex;justify-content:space-between;align-items:center;gap:6px;
+  padding:6px 9px;border-radius:12px;font-size:13px;font-weight:700;
+  border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);opacity:.55;
+  transition:all .25s;
+}
+.chip span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip.cur{opacity:1;border-color:var(--pc);background:rgba(255,255,255,.12);box-shadow:0 0 14px var(--pc);transform:translateY(-1px)}
+.chip .sc{background:var(--pc);color:#10102a;border-radius:8px;padding:0 7px;font-variant-numeric:tabular-nums}
+.board{
+  display:grid;grid-template-columns:repeat(var(--cols,4),1fr);gap:8px;
+  width:100%;max-width:980px;margin:0 auto;
+  padding:10px 8px calc(96px + env(safe-area-inset-bottom));
+}
+
+/* ---------- Карточки ---------- */
+.card{
+  position:relative;aspect-ratio:3/4;padding:0;border:0;background:none;cursor:pointer;
+  perspective:900px;touch-action:manipulation;outline:none;
+}
+.card:focus-visible .back{outline:3px solid var(--neon3)}
+.inner{
+  position:absolute;inset:0;transform-style:preserve-3d;
+  transition:transform .55s cubic-bezier(.2,.8,.2,1);
+}
+.card.flipped .inner,.card.matched .inner{transform:rotateY(180deg)}
+.face{
+  position:absolute;inset:0;border-radius:var(--card-r);overflow:hidden;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  box-shadow:0 6px 14px rgba(0,0,0,.45);
+}
+.back{
+  display:flex;align-items:center;justify-content:center;text-align:center;padding:4px;
+  border:2px solid rgba(255,255,255,.35);
+  background:
+    repeating-linear-gradient(45deg,rgba(255,255,255,.08) 0 6px,transparent 6px 12px),
+    linear-gradient(145deg,var(--neon1),#6d28d9 55%,var(--neon2));
+  font-weight:800;font-size:clamp(9px,2.6vw,13px);line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45);
+}
+.front{transform:rotateY(180deg);background:#17123a;border:2px solid rgba(34,211,238,.6)}
+.front img{width:100%;height:100%;object-fit:cover;display:block;background:#222}
+.nameBar{
+  position:absolute;left:0;right:0;bottom:0;padding:16px 4px 5px;text-align:center;
+  background:linear-gradient(transparent,rgba(0,0,0,.88));
+  font-weight:800;font-size:clamp(10px,2.9vw,14px);line-height:1.1;
+}
+.card.matched{cursor:default;animation:pop .45s}
+.card.matched .front{border-color:var(--neon3);box-shadow:0 0 18px rgba(163,255,79,.65)}
+@keyframes pop{50%{transform:scale(1.07)}}
+
+/* ---------- Тост ---------- */
+#toast{
+  position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));z-index:30;
+  transform:translate(-50%,20px);opacity:0;pointer-events:none;
+  width:max-content;max-width:min(92vw,520px);padding:10px 14px;border-radius:16px;
+  background:rgba(20,15,50,.95);border:1px solid var(--neon3);
+  box-shadow:0 8px 30px rgba(0,0,0,.5),0 0 18px rgba(163,255,79,.3);
+  font-size:14px;line-height:1.3;text-align:center;
+  transition:opacity .3s,transform .3s;
+}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast b{color:var(--neon3)}
+
+/* ---------- Оверлеи ---------- */
+.overlay{
+  position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;padding:18px;
+  background:rgba(5,3,20,.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+}
+.overlay.active{display:flex}
+.panel{
+  width:100%;max-width:460px;max-height:92vh;max-height:92dvh;overflow:auto;text-align:center;
+  padding:24px 18px;border-radius:24px;border:1px solid rgba(255,255,255,.2);
+  background:linear-gradient(160deg,#241a5a,#14264f);
+  box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 40px rgba(255,47,179,.2);
+  animation:rise .5s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes rise{from{transform:translateY(30px) scale(.95);opacity:0}}
+.panel h2{margin:0 0 6px;font-size:clamp(22px,6.5vw,30px)}
+.panel p{margin:8px 0}
+.bigstats{display:flex;gap:10px;margin:14px 0}
+.bigstats div{flex:1;padding:12px 6px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14)}
+.bigstats b{display:block;font-size:26px;color:var(--neon3);font-variant-numeric:tabular-nums}
+.bigstats small{opacity:.75;font-size:12px}
+.rank{display:flex;flex-direction:column;gap:6px;margin:6px 0 10px}
+.rank:empty{display:none}
+.rank div{
+  display:flex;justify-content:space-between;gap:8px;padding:9px 12px;border-radius:12px;
+  background:rgba(255,255,255,.07);border-left:5px solid var(--pc);font-weight:700;text-align:left;
+}
+.rank div.top{background:rgba(163,255,79,.15)}
+.teacher{
+  margin:12px 0;padding:12px 14px;border-radius:16px;text-align:left;line-height:1.4;font-size:15px;
+  background:rgba(255,47,179,.12);border:1px solid rgba(255,47,179,.4);
+}
+.teacher i{display:block;margin-top:6px;opacity:.8;font-size:13px}
+.record{font-size:14px;opacity:.85;min-height:6px}
+.panel .btn{width:100%;margin-top:8px}
+
+/* ---------- Конфетти ---------- */
+.confetti{position:fixed;top:-20px;width:10px;height:14px;z-index:50;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(112vh) rotate(720deg)}}
+
+@media (min-width:700px){
+  .board{gap:12px;padding-top:16px}
+  .hud .stats{font-size:16px;gap:18px}
+}
+@media (prefers-reduced-motion:reduce){
+  .inner{transition-duration:.01s}
+  .confetti,.card.matched,.panel{animation:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== СТАРТ ===================== -->
+<section id="start" class="screen active">
+  <div style="font-size:54px">🔥🃏🔥</div>
+  <h1 id="gameTitle">Найди пару</h1>
+  <p class="dedication" id="startText"></p>
+
+  <div class="group-title">Сколько играет?</div>
+  <div class="pcount" id="pcount">
+    <button class="opt sel" data-n="1"><b>1</b><small>игрок</small></button>
+    <button class="opt" data-n="2"><b>2</b><small>игрока</small></button>
+    <button class="opt" data-n="3"><b>3</b><small>игрока</small></button>
+    <button class="opt" data-n="4"><b>4</b><small>игрока</small></button>
+  </div>
+  <div class="names" id="names"></div>
+  <p class="hint" id="hint"></p>
+
+  <button class="btn" id="startBtn">Начать игру</button>
+</section>
+
+<!-- ===================== ИГРА ===================== -->
+<section id="game" class="screen">
+  <div class="hud">
+    <div class="hudrow">
+      <div class="stats">
+        <span>⏱ <span id="hTime">0:00</span></span>
+        <span>👣 <span id="hMoves">0</span></span>
+        <span>✅ <span id="hPairs">0/0</span></span>
+      </div>
+      <div class="btns">
+        <button class="iconbtn" id="soundBtn" type="button" aria-label="Звук">🔊</button>
+        <button class="iconbtn" id="homeBtn" type="button" aria-label="В меню">🏠</button>
+      </div>
+    </div>
+    <div class="players" id="players"></div>
+  </div>
+  <div class="board" id="board"></div>
+</section>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- Выход в меню -->
+<div class="overlay" id="exitBox">
+  <div class="panel">
+    <h2>Выйти в меню?</h2>
+    <p>Текущая игра будет сброшена.</p>
+    <button class="btn" id="exitYes" type="button">Выйти</button>
+    <button class="btn ghost" id="exitNo" type="button">Продолжить игру</button>
+  </div>
+</div>
+
+<!-- Победа -->
+<div class="overlay" id="win">
+  <div class="panel">
+    <h2 id="wTitle">🏆 Вся группа собрана!</h2>
+    <div class="rank" id="wRank"></div>
+    <div class="bigstats">
+      <div><b id="wTime">0:00</b><small>время</small></div>
+      <div><b id="wMoves">0</b><small>ходов</small></div>
+    </div>
+    <div class="record" id="wRecord"></div>
+    <div class="teacher">
+      <span id="teacherMsg"></span>
+      <i id="teacherSign"></i>
+    </div>
+    <button class="btn" id="copyBtn" type="button">📋 Скопировать результат для чата</button>
+    <button class="btn ghost" id="againBtn" type="button">🔄 Сыграть ещё</button>
+    <button class="btn ghost" id="menuBtn" type="button">🏠 В меню</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* =====================================================================
+   ⚙️ НАСТРОЙКИ — ВПИШИТЕ СВОИ ДАННЫЕ ЗДЕСЬ
+   ===================================================================== */
+
+// Список учеников. Меняйте name, meme и photo.
+// photo — путь к файлу в папке photos/ (лучше вертикальные фото 3:4, ~400×530 px).
+// Если файла нет — автоматически покажется цветная заглушка с инициалом.
+const students = [
+  { id: 1,  name: "",  photo: "photos/1.jpg",  meme: "" },
+  { id: 2,  name: "",  photo: "photos/2.jpg",  meme: "" },
+  { id: 3,  name: "",  photo: "photos/3.jpg",  meme: "" },
+  { id: 4,  name: "",  photo: "photos/4.jpg",  meme: "" },
+  { id: 5,  name: "",  photo: "photos/5.jpg",  meme: "" },
+  { id: 6,  name: "",  photo: "photos/6.jpg",  meme: "" },
+  { id: 7,  name: "",  photo: "photos/7.jpg",  meme: "" },
+  { id: 8,  name: "",  photo: "photos/8.jpg",  meme: "" },
+  { id: 9,  name: "",  photo: "photos/9.jpg",  meme: "" },
+  { id: 10, name: "", photo: "photos/10.jpg", meme: "" },
+  { id: 11, name: "", photo: "photos/11.jpg", meme: "" },
+  { id: 12, name: "", photo: "photos/12.jpg", meme: "" },
+  { id: 13, name: "", photo: "photos/13.jpg", meme: "" },
+  { id: 14, name: "", photo: "photos/14.jpg", meme: "" },
+  { id: 15, name: "", photo: "photos/15.jpg", meme: "" },
+  { id: 16, name: "", photo: "photos/16.jpg", meme: "" },
+  { id: 17, name: "", photo: "photos/17.jpg", meme: "" },
+  { id: 18, name: "", photo: "photos/18.jpg", meme: "" },
+  { id: 19, name: "", photo: "photos/19.jpg", meme: "" },
+  { id: 20, name: "", photo: "photos/20.jpg", meme: "" },
+  { id: 21, name: "", photo: "photos/21.jpg", meme: "" },
+  { id: 22, name: "", photo: "photos/22.jpg", meme: "" },
+  { id: 23, name: "", photo: "photos/23.jpg", meme: "" },
+  { id: 24, name: "", photo: "photos/24.jpg", meme: "" },
+  { id: 25, name: "", photo: "photos/25.jpg", meme: "" },
+  { id: 26, name: "", photo: "photos/26.jpg", meme: "" }
+];
+
+// Тексты
+const CONFIG = {
+  title: "Найди пару",
+  startText: "Специально для самой лучшей группы — спасибо за стол и нереальный вайб!",
+  backText: "Спасибо за праздник! 🔥",
+  teacherMessage: "Вы — лучшая группа на свете! Спасибо за этот праздник, за накрытый стол и за вашу энергию. Я это запомню надолго. Горжусь каждым из вас! ❤️",
+  teacherSign: "— Кутман агай"
+};
+
+/* =====================================================================
+   Дальше можно ничего не менять
+   ===================================================================== */
+
+const $ = s => document.querySelector(s);
+const PCOLORS = ["#22d3ee", "#ff2fb3", "#a3ff4f", "#ffd166"];
+
+const state = {
+  nPlayers: 1,
+  names: ["Игрок 1", "Игрок 2", "Игрок 3", "Игрок 4"],
+  scores: [], cur: 0,
+  cards: [], first: null, lock: false,
+  moves: 0, found: 0, total: 0,
+  elapsedBefore: 0, startTs: null, hudTimer: null, toastTimer: null
+};
+
+/* ---------- утилиты ---------- */
+function shuffle(arr){
+  for (let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+function escXml(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function fmtTime(ms){
+  const s = Math.floor(ms / 1000);
+  return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+}
+function avatar(s){
+  const hue = (s.id * 47) % 360;
+  const initial = escXml(((s.name || "?").trim()[0] || "?").toUpperCase());
+  const svg =
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 400'>" +
+    "<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>" +
+    "<stop offset='0' stop-color='hsl(" + hue + ",80%,55%)'/>" +
+    "<stop offset='1' stop-color='hsl(" + ((hue + 50) % 360) + ",80%,32%)'/></linearGradient></defs>" +
+    "<rect width='300' height='400' fill='url(#g)'/>" +
+    "<text x='150' y='225' font-size='170' font-family='Arial,sans-serif' font-weight='700' fill='white' fill-opacity='.92' text-anchor='middle'>" + initial + "</text>" +
+    "<text x='150' y='290' font-size='34' font-family='Arial,sans-serif' font-weight='700' fill='white' fill-opacity='.6' text-anchor='middle'>#" + s.id + "</text>" +
+    "</svg>";
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
+function makeImg(s){
+  const img = document.createElement("img");
+  img.alt = s.name;
+  img.draggable = false;
+  img.decoding = "async";
+  img.onerror = () => { img.onerror = null; img.src = avatar(s); };
+  img.src = s.photo || avatar(s);
+  return img;
+}
+
+/* ---------- звук (Web Audio) ---------- */
+let audioCtx = null, soundOn = true;
+function initAudio(){
+  try{
+    if (!audioCtx){
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+  }catch(e){}
+}
+function beep(freq, delay, dur, type, vol){
+  if (!soundOn || !audioCtx) return;
+  try{
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    const t = audioCtx.currentTime + delay;
+    o.type = type || "sine";
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol || 0.12, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t); o.stop(t + dur + 0.03);
+  }catch(e){}
+}
+const sfx = {
+  flip(){ beep(520, 0, .07, "triangle", .09); },
+  match(){ beep(660, 0, .12, "sine", .15); beep(880, .1, .12, "sine", .15); beep(1175, .2, .2, "sine", .13); },
+  miss(){ beep(230, 0, .16, "sawtooth", .045); },
+  win(){
+    [523, 659, 784, 1047].forEach((f, i) => beep(f, i * .15, .22, "square", .08));
+    [523, 659, 784, 1047].forEach(f => beep(f, .7, .9, "triangle", .1));
+    beep(1319, .95, .8, "sine", .1);
+  }
+};
+function updateSoundBtn(){ $("#soundBtn").textContent = soundOn ? "🔊" : "🔇"; }
+
+/* ---------- таймер ---------- */
+function elapsed(){ return state.elapsedBefore + (state.startTs ? performance.now() - state.startTs : 0); }
+function startTimer(){ if (!state.startTs) state.startTs = performance.now(); }
+function pauseTimer(){
+  if (state.startTs){ state.elapsedBefore += performance.now() - state.startTs; state.startTs = null; }
+}
+function updateHud(){
+  $("#hTime").textContent = fmtTime(elapsed());
+  $("#hMoves").textContent = state.moves;
+  $("#hPairs").textContent = state.found + "/" + state.total;
+}
+function renderPlayers(){
+  const box = $("#players");
+  box.innerHTML = "";
+  if (state.nPlayers < 2) return;
+  for (let i = 0; i < state.nPlayers; i++){
+    const chip = document.createElement("div");
+    chip.className = "chip" + (i === state.cur ? " cur" : "");
+    chip.style.setProperty("--pc", PCOLORS[i]);
+    const n = document.createElement("span"); n.textContent = (i === state.cur ? "👉 " : "") + state.names[i];
+    const sc = document.createElement("span"); sc.className = "sc"; sc.textContent = state.scores[i];
+    chip.append(n, sc);
+    box.appendChild(chip);
+  }
+}
+
+/* ---------- экраны ---------- */
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(el => el.classList.toggle("active", el.id === id));
+  window.scrollTo(0, 0);
+}
+function showOverlay(id, on){ $(id).classList.toggle("active", on); }
+
+function applyCols(){
+  const w = window.innerWidth;
+  const cols = w < 600 ? 4 : (w < 900 ? 7 : 8);
+  $("#board").style.setProperty("--cols", cols);
+}
+
+/* ---------- игра ---------- */
+function startGame(){
+  initAudio();
+  const pool = shuffle(students.slice());
+  state.total = pool.length;
+  state.cards = [];
+  pool.forEach(s => state.cards.push({ s }, { s }));
+  shuffle(state.cards);
+
+  state.scores = new Array(state.nPlayers).fill(0);
+  state.cur = 0;
+  state.moves = 0;
+  state.found = 0;
+  state.first = null;
+  state.lock = false;
+  state.elapsedBefore = 0;
+  state.startTs = null;
+
+  showOverlay("#win", false);
+  showOverlay("#exitBox", false);
+  $("#toast").classList.remove("show");
+  showScreen("game");
+  renderBoard();
+  applyCols();
+  renderPlayers();
+  updateHud();
+  clearInterval(state.hudTimer);
+  state.hudTimer = setInterval(updateHud, 250);
+}
+
+function renderBoard(){
+  const board = $("#board");
+  board.innerHTML = "";
+  state.cards.forEach(c => {
+    const el = document.createElement("button");
+    el.className = "card";
+    el.type = "button";
+    el.setAttribute("aria-label", "Карточка");
+
+    const inner = document.createElement("div");
+    inner.className = "inner";
+
+    const back = document.createElement("div");
+    back.className = "face back";
+    back.textContent = CONFIG.backText;
+
+    const front = document.createElement("div");
+    front.className = "face front";
+    front.appendChild(makeImg(c.s));
+    const bar = document.createElement("div");
+    bar.className = "nameBar"; bar.textContent = c.s.name;
+    front.appendChild(bar);
+
+    inner.append(back, front);
+    el.appendChild(inner);
+    el.addEventListener("click", () => onCard(c));
+    c.el = el; c.flipped = false; c.matched = false;
+    board.appendChild(el);
+  });
+}
+
+function onCard(c){
+  if (state.lock || c.flipped || c.matched) return;
+  initAudio();
+  startTimer();
+  c.flipped = true;
+  c.el.classList.add("flipped");
+  sfx.flip();
+
+  if (!state.first){ state.first = c; return; }
+
+  const a = state.first, b = c;
+  state.first = null;
+  state.moves++;
+  updateHud();
+  state.lock = true;
+
+  if (a.s.id === b.s.id){
+    setTimeout(() => {
+      [a, b].forEach(x => { x.matched = true; x.el.classList.remove("flipped"); x.el.classList.add("matched"); });
+      state.found++;
+      state.scores[state.cur]++;
+      sfx.match();
+      showToast(a.s);
+      updateHud();
+      renderPlayers();
+      state.lock = false;
+      if (state.found === state.total) setTimeout(gameWon, 1100);
+    }, 450);
+  } else {
+    setTimeout(() => {
+      sfx.miss();
+      [a, b].forEach(x => { x.flipped = false; x.el.classList.remove("flipped"); });
+      if (state.nPlayers > 1){
+        state.cur = (state.cur + 1) % state.nPlayers;
+        renderPlayers();
+      }
+      setTimeout(() => { state.lock = false; }, 300);
+    }, 1050);
+  }
+}
+
+function showToast(s){
+  const t = $("#toast");
+  t.innerHTML = "";
+  const b = document.createElement("b"); b.textContent = s.name;
+  t.append(document.createTextNode("🏆 Найдена легенда: "), b, document.createTextNode(" — " + s.meme));
+  t.classList.add("show");
+  clearTimeout(state.toastTimer);
+  state.toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+/* ---------- победа ---------- */
+function winners(){
+  const max = Math.max.apply(null, state.scores);
+  const idx = [];
+  state.scores.forEach((v, i) => { if (v === max) idx.push(i); });
+  return idx;
+}
+function gameWon(){
+  pauseTimer();
+  clearInterval(state.hudTimer);
+  updateHud();
+  const ms = elapsed();
+  $("#wTime").textContent = fmtTime(ms);
+  $("#wMoves").textContent = state.moves;
+  $("#teacherMsg").textContent = CONFIG.teacherMessage;
+  $("#teacherSign").textContent = CONFIG.teacherSign;
+  $("#copyBtn").textContent = "📋 Скопировать результат для чата";
+
+  const rank = $("#wRank");
+  rank.innerHTML = "";
+  if (state.nPlayers > 1){
+    const w = winners();
+    $("#wTitle").textContent = w.length === 1
+      ? "🏆 Победил: " + state.names[w[0]] + "!"
+      : "🤝 Ничья: " + w.map(i => state.names[i]).join(" и ");
+    const order = state.names.slice(0, state.nPlayers).map((n, i) => i).sort((a, b) => state.scores[b] - state.scores[a]);
+    order.forEach(i => {
+      const row = document.createElement("div");
+      row.style.setProperty("--pc", PCOLORS[i]);
+      if (w.indexOf(i) >= 0) row.className = "top";
+      const n = document.createElement("span"); n.textContent = (w.indexOf(i) >= 0 ? "👑 " : "") + state.names[i];
+      const v = document.createElement("span"); v.textContent = state.scores[i] + " пар";
+      row.append(n, v);
+      rank.appendChild(row);
+    });
+  } else {
+    $("#wTitle").textContent = "🏆 Вся группа собрана!";
+  }
+
+  let rec = "";
+  if (state.nPlayers === 1){
+    try{
+      const key = "memory-best-solo";
+      const prev = parseInt(localStorage.getItem(key), 10);
+      if (!prev || ms < prev){
+        localStorage.setItem(key, String(Math.round(ms)));
+        rec = prev ? "🔥 Новый рекорд на этом телефоне!" : "";
+      } else rec = "🏅 Ваш рекорд: " + fmtTime(prev);
+    }catch(e){}
+  }
+  $("#wRecord").textContent = rec;
+
+  sfx.win();
+  showOverlay("#win", true);
+  confetti();
+}
+
+function resultText(){
+  const sec = Math.round(elapsed() / 1000);
+  if (state.nPlayers === 1){
+    return "Я собрал всю нашу группу за " + sec + " сек и " + state.moves + " ходов! Кто быстрее? 🔥";
+  }
+  const w = winners();
+  const who = w.map(i => state.names[i]).join(" и ");
+  return "Мы собрали всю нашу группу за " + sec + " сек и " + state.moves + " ходов! " +
+    (w.length === 1 ? "Победил " : "Ничья: ") + who + " — " + state.scores[w[0]] + " пар. Кто сильнее? 🔥";
+}
+async function copyResult(){
+  const text = resultText();
+  let ok = false;
+  try{
+    if (navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(text); ok = true;
+    }
+  }catch(e){}
+  if (!ok){
+    try{
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+      document.body.appendChild(ta);
+      ta.select(); ta.setSelectionRange(0, 99999);
+      ok = document.execCommand("copy");
+      ta.remove();
+    }catch(e){}
+  }
+  if (ok){
+    $("#copyBtn").textContent = "✅ Скопировано!";
+    setTimeout(() => { $("#copyBtn").textContent = "📋 Скопировать результат для чата"; }, 2500);
+  } else {
+    window.prompt("Скопируйте текст вручную:", text);
+  }
+}
+
+function confetti(){
+  const colors = ["#ff2fb3", "#22d3ee", "#a3ff4f", "#ffd166", "#a78bfa"];
+  for (let i = 0; i < 70; i++){
+    const d = document.createElement("div");
+    d.className = "confetti";
+    d.style.left = Math.random() * 100 + "vw";
+    d.style.background = colors[i % colors.length];
+    d.style.animationDuration = (2.5 + Math.random() * 2.5) + "s";
+    d.style.animationDelay = (Math.random() * 0.8) + "s";
+    d.style.borderRadius = Math.random() > .5 ? "50%" : "2px";
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 6500);
+  }
+}
+
+/* ---------- меню / события ---------- */
+function goMenu(){
+  clearInterval(state.hudTimer);
+  state.lock = false;
+  showOverlay("#win", false);
+  showOverlay("#exitBox", false);
+  $("#toast").classList.remove("show");
+  showScreen("start");
+}
+
+function renderNames(){
+  const box = $("#names");
+  box.innerHTML = "";
+  if (state.nPlayers < 2){
+    $("#hint").textContent = "Играете один — на время и ходы.";
+    return;
+  }
+  $("#hint").textContent = "Играете по очереди на одном телефоне. Нашёл пару — ходишь ещё раз, ошибся — ход переходит дальше. Побеждает тот, кто собрал больше пар.";
+  for (let i = 0; i < state.nPlayers; i++){
+    const inp = document.createElement("input");
+    inp.type = "text"; inp.maxLength = 12;
+    inp.value = state.names[i];
+    inp.placeholder = "Игрок " + (i + 1);
+    inp.style.setProperty("--pc", PCOLORS[i]);
+    inp.addEventListener("input", () => { state.names[i] = inp.value; });
+    inp.addEventListener("focus", () => inp.select());
+    box.appendChild(inp);
+  }
+}
+function normalizeNames(){
+  for (let i = 0; i < 4; i++){
+    if (!String(state.names[i]).trim()) state.names[i] = "Игрок " + (i + 1);
+    else state.names[i] = String(state.names[i]).trim();
+  }
+}
+
+function setup(){
+  document.title = CONFIG.title + " — для лучшей группы 🔥";
+  $("#gameTitle").textContent = CONFIG.title;
+  $("#startText").textContent = CONFIG.startText;
+
+  $("#pcount").addEventListener("click", e => {
+    const b = e.target.closest(".opt"); if (!b) return;
+    state.nPlayers = parseInt(b.dataset.n, 10);
+    $("#pcount").querySelectorAll(".opt").forEach(x => x.classList.toggle("sel", x === b));
+    renderNames();
+  });
+
+  $("#startBtn").addEventListener("click", () => { normalizeNames(); startGame(); });
+  $("#againBtn").addEventListener("click", () => { normalizeNames(); startGame(); });
+  $("#menuBtn").addEventListener("click", goMenu);
+  $("#copyBtn").addEventListener("click", copyResult);
+
+  // кнопка «домик» — своё окно подтверждения (системный confirm в Telegram/WhatsApp не работает)
+  $("#homeBtn").addEventListener("click", () => showOverlay("#exitBox", true));
+  $("#exitYes").addEventListener("click", goMenu);
+  $("#exitNo").addEventListener("click", () => showOverlay("#exitBox", false));
+
+  $("#soundBtn").addEventListener("click", () => {
+    soundOn = !soundOn; updateSoundBtn(); initAudio();
+    if (soundOn) beep(660, 0, .1, "sine", .12);
+  });
+  window.addEventListener("resize", applyCols);
+  updateSoundBtn();
+  renderNames();
+}
+setup();
+</script>
+</body>
+</html>
